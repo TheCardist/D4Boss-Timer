@@ -2,7 +2,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from twilio.rest import Client
-import keyring
 import datetime
 
 
@@ -10,15 +9,15 @@ def send_msg(boss_countdown, boss_type, next_boss_time):
     """Send SMS message to phone numbers below if critiera is met."""
 
     # Set environment variables for your credentials
-    account_sid = keyring.get_password("twilio", "sid")
-    auth_token = keyring.get_password("twilio", "token")
+    account_sid = "twilio sid"
+    auth_token = "twilio password"
     client = Client(account_sid, auth_token)
 
     # Sending SMS message
     message = client.messages.create(
         body=f"{boss_type} is spawning in {boss_countdown}, at {next_boss_time}",
-        from_="+15044144854",
-        to="+15406295089",
+        from_="<twilio phone number>",
+        to="<recipient phone number>",
     )
 
     print(message.sid)
@@ -125,7 +124,6 @@ if __name__ == "__main__":
 
     seconds = convert_to_seconds(clean_countdown)
     next_boss_time = set_12hr_format(seconds)
-
-    seconds = 1700
+    
     if check_time(seconds):
         send_msg(boss_countdown, boss_type, next_boss_time)
