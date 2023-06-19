@@ -6,7 +6,7 @@ import datetime
 
 
 def send_msg(boss_countdown, boss_type, next_boss_time):
-    """Send SMS message to phone numbers below if critiera is met."""
+    """ Send SMS message to phone numbers below if criteria is met. """
 
     # Set environment variables for your credentials
     account_sid = "twilio sid"
@@ -24,7 +24,7 @@ def send_msg(boss_countdown, boss_type, next_boss_time):
 
 
 def get_boss_info() -> str:
-    """Extract the boss name and current countdown timer information from the website."""
+    """ Extract the boss name and current countdown timer information from the website. """
 
     # Using selenium without opening the browser on the computer
     options = Options()
@@ -46,7 +46,7 @@ def get_boss_info() -> str:
 
 
 def get_clean_countdown(boss_countdown: str) -> str:
-    """Extract the h, m, s from the countdown timer to add into the sms."""
+    """ Remove the h, m, s values from the string to determine later if the timer is lower than 1800 seconds """
 
     chars = ["h", "m", "s"]
     for c in chars:
@@ -55,7 +55,7 @@ def get_clean_countdown(boss_countdown: str) -> str:
 
 
 def convert_to_seconds(boss_countdown: str) -> int:
-    """Convert the extracted countdown information into seconds to validate if it is <= 1800 seconds (30 minutes) before sending the sms."""
+    """ Convert the extracted countdown information into seconds to validate if it is <= 1800 seconds (30 minutes) before sending the SMS. """
 
     countdown = boss_countdown.split(" ")
 
@@ -77,7 +77,7 @@ def convert_to_seconds(boss_countdown: str) -> int:
 
 
 def set_12hr_format(boss_in_seconds: int) -> str:
-    """Convert the seconds into a 12 hour format to display in the SMS message, could also scrap off the d4 website instead."""
+    """ Convert the seconds into a 12 hour format to display in the SMS message, could also scrap off the d4 website instead. """
 
     # Get the current datetime object
     current_datetime = datetime.datetime.now()
@@ -106,7 +106,7 @@ def set_12hr_format(boss_in_seconds: int) -> str:
 
 
 def check_time(seconds: int) -> bool:
-    """Putting restrictions in place so sms messages are not sent too early or too late in the day and are not sent at all if the boss has more than 30 minutes until spawn time."""
+    """ Putting restrictions in place so sms messages are not sent too early or too late in the day and are not sent at all if the boss has more than 30 minutes until spawn time. """
 
     current_time = datetime.datetime.now().time()
 
