@@ -1,7 +1,6 @@
 import datetime
 import time
 import requests
-import keyring
 from twilio.rest import Client
 import pytz
 
