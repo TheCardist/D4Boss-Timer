@@ -1,2 +1,2 @@
 # D4Boss-Timer
-Python program for D4 boss timer sms
+Simple python program that uses Selenium to go to https://d4armory.io/events/ and pull down the countdown for the next boss, as well as the bosses, name to add into an SMS message if the timer is below 30 minutes and the current time is between 8:30 AM and 9:30 PM.
