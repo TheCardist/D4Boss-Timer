@@ -7,6 +7,8 @@ import pytz
 
 
 def request_api_data():
+    """ Request boss name and time data """
+    
     url = "https://d4armory.io/api/events/recent"
     response = requests.get(url)
 
@@ -21,7 +23,9 @@ def request_api_data():
     return boss_name, boss_time
 
 
-def check_time(boss_time: str):
+def check_time(boss_time: str) -> bool | str:
+    """ Check if it's an appropriate time of day to send sms and if the boss time is <= 30 minutes. """
+    
     current_timestamp = int(time.time())
 
     time_difference = boss_time - current_timestamp
@@ -44,24 +48,24 @@ def check_time(boss_time: str):
 
 
 def send_msg(boss_name: str, boss_time: str, spawn_time: str):
-    """Send SMS message to phone numbers below if critiera is met."""
+    """ Send SMS message to phone numbers below if criteria are met. """
 
     # Set environment variables for your credentials
-    account_sid = keyring.get_password("twilio", "sid")
-    auth_token = keyring.get_password("twilio", "token")
+    account_sid = '<twilio sid>'
+    auth_token = '<twilio password>'
     client = Client(account_sid, auth_token)
 
     # Sending SMS message
     message = client.messages.create(
         body=f"{boss_name} is spawning in {spawn_time}, at {boss_time} EST",
-        from_="+15044144854",
-        to="+15406295089",
+        from_="<twilio phone number>",
+        to="<recipient phone number>",
     )
 
     print(message.sid)
 
 
-def convert_to_12_hour_format(boss_time):
+def convert_to_12_hour_format(boss_time: str) -> str:
     datetime_obj = datetime.datetime.utcfromtimestamp(boss_time)
     local_timezone = pytz.timezone("America/New_York")
 
@@ -77,7 +81,7 @@ def convert_to_12_hour_format(boss_time):
 
 if __name__ == "__main__":
     boss_name, boss_time = request_api_data()
-    spawn_time = check_time(boss_time)
+    within_time_threshold, spawn_time = check_time(boss_time)
     if within_time_threshold:
         formatted_boss_time = convert_to_12_hour_format(boss_time)
         send_msg(boss_name, formatted_boss_time, spawn_time)
