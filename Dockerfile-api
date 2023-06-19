@@ -1,0 +1,11 @@
+FROM bitnami/python
+USER root
+WORKDIR /app
+COPY api_requirements.txt /app/requirements.txt
+RUN pip install -r /app/requirements.txt
+COPY api_main.py /app/main.py
+COPY run-command-10m.sh /app/run-command-10m.sh
+RUN chmod +x /app/run-command-10m.sh
+ENV TERM=xterm
+
+CMD ["/bin/sh", "/app/run-command-10m.sh"]

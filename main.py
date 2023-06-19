@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -5,22 +6,24 @@ from twilio.rest import Client
 import datetime
 
 
-def send_msg(boss_countdown, boss_type, next_boss_time):
-    """ Send SMS message to phone numbers below if criteria is met. """
+def send_msg(boss_name: str, boss_time: str, spawn_time: str):
+    """ Send SMS message to phone numbers below if criteria are met. """
 
     # Set environment variables for your credentials
-    account_sid = "twilio sid"
-    auth_token = "twilio password"
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    twilio_phone_number = os.environ.get('TWILIO_PHONE_NUMBER')
+    recipient_phone_number= os.environ.get('RECIPIENT_PHONE_NUMBER')
+    auth_token = os.environ.get('TWILIO_TOKEN')
     client = Client(account_sid, auth_token)
 
     # Sending SMS message
     message = client.messages.create(
         body=f"{boss_type} is spawning in {boss_countdown}, at {next_boss_time}",
-        from_="<twilio phone number>",
-        to="<recipient phone number>",
+        from_=f"{twilio_phone_number}",
+        to=f"{recipient_phone_number}",
     )
 
-    print(message.sid)
+    print(message)
 
 
 def get_boss_info() -> str:
@@ -110,8 +113,17 @@ def check_time(seconds: int) -> bool:
 
     current_time = datetime.datetime.now().time()
 
-    min_time = datetime.time(8, 30)  # 8:30 AM
-    max_time = datetime.time(21, 30)  # 9:30 PM
+    # Assuming environment variables are set as "HH:MM"
+    min_time_str = os.environ.get('MIN_TIME', '07:30')  # default to '07:30' if not set
+    max_time_str = os.environ.get('MAX_TIME', '21:30')  # default to '21:30' if not set
+
+    # Split the strings and convert to integers
+    min_hour, min_minute = map(int, min_time_str.split(':'))
+    max_hour, max_minute = map(int, max_time_str.split(':'))
+
+    # Create datetime.time objects
+    min_time = datetime.time(min_hour, min_minute)
+    max_time = datetime.time(max_hour, max_minute)
 
     if current_time > min_time and current_time < max_time:
         if seconds <= 1800:  # <= 30 minutes until spawn time
@@ -126,4 +138,8 @@ if __name__ == "__main__":
     next_boss_time = set_12hr_format(seconds)
     
     if check_time(seconds):
+        print("next spawn is at " + next_boss_time + ".")
+        print("sending SMS")
         send_msg(boss_countdown, boss_type, next_boss_time)
+    else:
+        print("next spawn is at " + next_boss_time + ".")

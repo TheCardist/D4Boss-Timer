@@ -1,3 +1,4 @@
+import os
 import datetime
 import time
 import requests
@@ -31,42 +32,52 @@ def check_time(boss_time: str) -> bool | str:
 
     threshold = 1800  # 30 minutes in seconds
 
-    min_time = datetime.time(7, 30)  # 8:30 AM
-    max_time = datetime.time(21, 30)  # 9:30 PM
+    # Assuming environment variables are set as "HH:MM"
+    min_time_str = os.environ.get('MIN_TIME', '07:30')  # default to '07:30' if not set
+    max_time_str = os.environ.get('MAX_TIME', '21:30')  # default to '21:30' if not set
+
+    # Split the strings and convert to integers
+    min_hour, min_minute = map(int, min_time_str.split(':'))
+    max_hour, max_minute = map(int, max_time_str.split(':'))
+
+    # Create datetime.time objects
+    min_time = datetime.time(min_hour, min_minute)
+    max_time = datetime.time(max_hour, max_minute)
 
     current_datetime = datetime.datetime.now()
     current_time = current_datetime.time()
+    time_diff_formatted = str(datetime.timedelta(seconds=time_difference))
 
     if current_time > min_time and current_time < max_time:
         if time_difference <= threshold:
-            time_diff_formatted = datetime.datetime.utcfromtimestamp(
-                time_difference
-            ).strftime("%M:%S")
-
             return True, time_diff_formatted
+    return False, time_diff_formatted
 
 
 def send_msg(boss_name: str, boss_time: str, spawn_time: str):
     """ Send SMS message to phone numbers below if criteria are met. """
 
     # Set environment variables for your credentials
-    account_sid = '<twilio sid>'
-    auth_token = '<twilio password>'
+    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+    twilio_phone_number = os.environ.get('TWILIO_PHONE_NUMBER')
+    recipient_phone_number= os.environ.get('RECIPIENT_PHONE_NUMBER')
+    auth_token = os.environ.get('TWILIO_TOKEN')
     client = Client(account_sid, auth_token)
 
     # Sending SMS message
     message = client.messages.create(
-        body=f"{boss_name} is spawning in {spawn_time}, at {boss_time} EST",
-        from_="<twilio phone number>",
-        to="<recipient phone number>",
+        body=f"{boss_name} is spawning in {spawn_time}, at {boss_time}",
+        from_=f"{twilio_phone_number}",
+        to=f"{recipient_phone_number}",
     )
 
-    print(message.sid)
+    print(message)
 
 
 def convert_to_12_hour_format(boss_time: str) -> str:
     datetime_obj = datetime.datetime.utcfromtimestamp(boss_time)
-    local_timezone = pytz.timezone("America/New_York")
+    local_timezone_str = os.environ.get('TZ', 'America/New_York')  # default to 'America/New_York' if not set
+    local_timezone = pytz.timezone(local_timezone_str)
 
     local_datetime = datetime_obj.replace(tzinfo=pytz.utc).astimezone(local_timezone)
 
@@ -80,7 +91,12 @@ def convert_to_12_hour_format(boss_time: str) -> str:
 
 if __name__ == "__main__":
     boss_name, boss_time = request_api_data()
+    formatted_boss_time = convert_to_12_hour_format(boss_time)
     within_time_threshold, spawn_time = check_time(boss_time)
     if within_time_threshold:
-        formatted_boss_time = convert_to_12_hour_format(boss_time)
+        print("next spawn is at " + formatted_boss_time)
+        print("sending SMS")
         send_msg(boss_name, formatted_boss_time, spawn_time)
+    else:
+        print("next spawn is at " + formatted_boss_time)
+

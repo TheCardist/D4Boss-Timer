@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+  d4boss-alerts:
+    container_name: D4Boss-alerts
+    build:
+      context: .
+      #dockerfile: Dockerfile-selenium
+      dockerfile: Dockerfile-api
+    environment:
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      - RECIPIENT_PHONE_NUMBER=${RECIPIENT_PHONE_NUMBER}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_TOKEN=${TWILIO_TOKEN}
+      - TZ=${TZ}
+      - MIN_TIME=${MIN_TIME}
+      - MAX_TIME=${MAX_TIME}
